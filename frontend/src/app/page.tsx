@@ -89,7 +89,11 @@ export default function Home() {
       if (
         !error ||
         !(error instanceof Error) ||
-        !error.message.includes('Transaction cancelled by user')
+        !(
+          error.message.includes('Transaction cancelled by user') ||
+          error.message.includes('Insufficient funds for transaction') ||
+          error.message.includes('Network error - please check your connection')
+        )
       ) {
         toast.error('Failed to increment counter');
       }
@@ -111,7 +115,12 @@ export default function Home() {
       if (
         !error ||
         !(error instanceof Error) ||
-        !error.message.includes('Transaction cancelled by user')
+        !(
+          error.message.includes('Transaction cancelled by user') ||
+          error.message.includes('Insufficient funds for transaction') ||
+          error.message.includes('Network error - please check your connection') ||
+          error.message.includes('Cannot decrement below zero')
+        )
       ) {
         toast.error('Failed to decrement counter');
       }
