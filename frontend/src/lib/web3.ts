@@ -121,7 +121,9 @@ export const isNetworkSupported = (networkName: string): boolean => {
   );
 };
 
-export const verifyContractDeployment = async (networkName: string): Promise<{ isValid: boolean; error?: string }> => {
+export const verifyContractDeployment = async (
+  networkName: string
+): Promise<{ isValid: boolean; error?: string }> => {
   try {
     const readOnlyContract = getReadOnlyContract(networkName);
     if (!readOnlyContract) {
@@ -136,7 +138,10 @@ export const verifyContractDeployment = async (networkName: string): Promise<{ i
     let errorMessage = 'Unknown contract verification error';
 
     if (error instanceof Error) {
-      if (error.message.includes('call revert exception') || error.message.includes('execution reverted')) {
+      if (
+        error.message.includes('call revert exception') ||
+        error.message.includes('execution reverted')
+      ) {
         errorMessage = 'Contract call reverted - invalid contract interface';
       } else if (error.message.includes('network') || error.message.includes('connection')) {
         errorMessage = 'Network connection error during contract verification';
