@@ -84,6 +84,7 @@ export const getNetworkName = (chainId: number): string => {
   const networkMap: { [key: number]: string } = {
     31337: 'localhost',
     20143: 'monad-testnet', // Monad testnet chain ID
+    4801: 'worldcoin-sepolia', // Worldcoin Sepolia testnet chain ID
   };
   return networkMap[chainId] || 'unknown';
 };
@@ -140,6 +141,8 @@ export const getReadOnlyContract = (networkName: string): ethers.Contract | null
     rpcUrl = 'http://localhost:8545';
   } else if (networkName === 'monad-testnet') {
     rpcUrl = 'https://testnet1.monad.xyz'; // Replace with actual Monad testnet RPC
+  } else if (networkName === 'worldcoin-sepolia') {
+    rpcUrl = 'https://worldchain-sepolia.g.alchemy.com/public';
   } else {
     return null;
   }
@@ -182,11 +185,7 @@ export const switchToNetwork = async (networkName: string): Promise<boolean> => 
             {
               chainId: chainIdHex,
               chainName: getNetworkDisplayName(networkName),
-              nativeCurrency: {
-                name: 'ETH',
-                symbol: 'ETH',
-                decimals: 18,
-              },
+              nativeCurrency: getNativeCurrency(networkName),
               rpcUrls: [getRpcUrl(networkName)],
               blockExplorerUrls: getBlockExplorerUrls(networkName),
             },
@@ -208,14 +207,25 @@ const getNetworkDisplayName = (networkName: string): string => {
   const displayNames: { [key: string]: string } = {
     'localhost': 'Localhost 8545',
     'monad-testnet': 'Monad Testnet',
+    'worldcoin-sepolia': 'Worldcoin Sepolia Testnet',
   };
   return displayNames[networkName] || networkName;
+};
+
+const getNativeCurrency = (networkName: string) => {
+  const currencies: { [key: string]: { name: string; symbol: string; decimals: number } } = {
+    'localhost': { name: 'ETH', symbol: 'ETH', decimals: 18 },
+    'monad-testnet': { name: 'ETH', symbol: 'ETH', decimals: 18 },
+    'worldcoin-sepolia': { name: 'ETH', symbol: 'ETH', decimals: 18 },
+  };
+  return currencies[networkName] || { name: 'ETH', symbol: 'ETH', decimals: 18 };
 };
 
 const getRpcUrl = (networkName: string): string => {
   const rpcUrls: { [key: string]: string } = {
     'localhost': 'http://localhost:8545',
     'monad-testnet': 'https://testnet1.monad.xyz',
+    'worldcoin-sepolia': 'https://worldchain-sepolia.g.alchemy.com/public',
   };
   return rpcUrls[networkName] || '';
 };
@@ -224,6 +234,7 @@ const getBlockExplorerUrls = (networkName: string): string[] => {
   const explorerUrls: { [key: string]: string[] } = {
     'localhost': ['http://localhost:8545'],
     'monad-testnet': ['https://testnet1.monad.xyz'], // Replace with actual explorer
+    'worldcoin-sepolia': ['https://worldchain-sepolia.blockscout.com'],
   };
   return explorerUrls[networkName] || [];
 };

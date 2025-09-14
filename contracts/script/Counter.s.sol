@@ -10,7 +10,10 @@ contract CounterScript is Script {
     function setUp() public {}
 
     function run() public {
-        vm.startBroadcast();
+        // Load private key from environment variable
+        uint256 deployerPrivateKey = vm.envUint("DEPLOYER_PRIVATE_KEY");
+        
+        vm.startBroadcast(deployerPrivateKey);
 
         counter = new Counter();
 
