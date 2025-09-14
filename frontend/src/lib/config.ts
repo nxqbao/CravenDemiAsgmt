@@ -6,7 +6,7 @@ export enum NetworkType {
 }
 
 // Current active network - change this to switch networks
-export const ACTIVE_NETWORK: NetworkType = NetworkType.WORLDCHAIN_SEPOLIA;
+export const ACTIVE_NETWORK: NetworkType = NetworkType.MONAD_TESTNET;
 
 // Network configuration object
 export const NETWORK_CONFIG = {
@@ -25,7 +25,7 @@ export const NETWORK_CONFIG = {
   [NetworkType.MONAD_TESTNET]: {
     name: 'monad-testnet',
     displayName: 'Monad Testnet',
-    chainId: 20143,
+    chainId: 10143,
     isTestnet: true,
   },
 };

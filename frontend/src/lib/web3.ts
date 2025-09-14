@@ -87,7 +87,7 @@ export const connectToMetaMask = async (): Promise<{
 export const getNetworkName = (chainId: number): string => {
   const networkMap: { [key: number]: string } = {
     31337: 'localhost',
-    20143: 'monad-testnet', // Monad testnet chain ID
+    10143: 'monad-testnet', // Monad testnet chain ID
     4801: 'worldcoin-sepolia', // Worldcoin Sepolia testnet chain ID
   };
   return networkMap[chainId] || 'unknown';
@@ -161,7 +161,7 @@ export const getReadOnlyContract = (networkName: string): ethers.Contract | null
   if (networkName === 'localhost') {
     rpcUrl = 'http://localhost:8545';
   } else if (networkName === 'monad-testnet') {
-    rpcUrl = 'https://testnet1.monad.xyz'; // Replace with actual Monad testnet RPC
+    rpcUrl = 'https://testnet-rpc.monad.xyz'; // Monad testnet RPC
   } else if (networkName === 'worldcoin-sepolia') {
     rpcUrl = 'https://worldchain-sepolia.g.alchemy.com/public';
   } else {
@@ -250,7 +250,7 @@ const getNativeCurrency = (networkName: string) => {
 const getRpcUrl = (networkName: string): string => {
   const rpcUrls: { [key: string]: string } = {
     localhost: 'http://localhost:8545',
-    'monad-testnet': 'https://testnet1.monad.xyz',
+    'monad-testnet': 'https://testnet-rpc.monad.xyz',
     'worldcoin-sepolia': 'https://worldchain-sepolia.g.alchemy.com/public',
   };
   return rpcUrls[networkName] || '';
