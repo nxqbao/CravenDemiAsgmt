@@ -1,6 +1,7 @@
 import { ethers } from 'ethers';
 import CounterABI from '../../lib/contracts/CounterABI.json';
 import deployment from '../../lib/contracts/deployment.json';
+import { getActiveNetworkName } from './config';
 
 export interface NetworkDeployment {
   contractAddress: string;
@@ -112,16 +113,18 @@ export const isNetworkSupported = (networkName: string): boolean => {
 
 export const getSupportedNetworks = (): string[] => {
   const config = deployment as DeploymentConfig;
+  const activeNetwork = getActiveNetworkName();
   return Object.keys(config).filter(networkName => {
     const deployment = config[networkName];
-    return deployment.contractAddress && deployment.contractAddress !== "";
+    return networkName === activeNetwork && deployment.contractAddress && deployment.contractAddress !== "";
   });
 };
 
 export const getSupportedNetworkDetails = (): { name: string; chainId: number; contractAddress: string }[] => {
   const config = deployment as DeploymentConfig;
+  const activeNetwork = getActiveNetworkName();
   return Object.entries(config)
-    .filter(([_, deployment]) => deployment.contractAddress && deployment.contractAddress !== "")
+    .filter(([name, deployment]) => name === activeNetwork && deployment.contractAddress && deployment.contractAddress !== "")
     .map(([name, deployment]) => ({
       name,
       chainId: deployment.chainId,
@@ -215,7 +218,7 @@ const getNetworkDisplayName = (networkName: string): string => {
 const getNativeCurrency = (networkName: string) => {
   const currencies: { [key: string]: { name: string; symbol: string; decimals: number } } = {
     'localhost': { name: 'ETH', symbol: 'ETH', decimals: 18 },
-    'monad-testnet': { name: 'ETH', symbol: 'ETH', decimals: 18 },
+    'monad-testnet': { name: 'MONAD', symbol: 'MON', decimals: 18 },
     'worldcoin-sepolia': { name: 'ETH', symbol: 'ETH', decimals: 18 },
   };
   return currencies[networkName] || { name: 'ETH', symbol: 'ETH', decimals: 18 };
@@ -233,8 +236,8 @@ const getRpcUrl = (networkName: string): string => {
 const getBlockExplorerUrls = (networkName: string): string[] => {
   const explorerUrls: { [key: string]: string[] } = {
     'localhost': ['http://localhost:8545'],
-    'monad-testnet': ['https://testnet1.monad.xyz'], // Replace with actual explorer
-    'worldcoin-sepolia': ['https://worldchain-sepolia.blockscout.com'],
+    'monad-testnet': ['https://monad-testnet.socialscan.io/'], // Replace with actual explorer
+    'worldcoin-sepolia': ['https://sepolia.worldscan.org/'],
   };
   return explorerUrls[networkName] || [];
 };

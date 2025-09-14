@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Deploy to Worldcoin Sepolia network
-# Make sure to create a .env file with your PRIVATE_KEY
+# Make sure to create a .env file with your DEPLOYER_PRIVATE_KEY
 
 echo "Deploying Counter contract to Worldcoin Sepolia network..."
 

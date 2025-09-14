@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useWeb3 } from '../contexts/Web3Context';
 import { getSupportedNetworkDetails } from '../lib/web3';
+import { getActiveNetworkConfig, getActiveNetworkName, NETWORK_CONFIG } from '../lib/config';
 
 export default function Home() {
   const {
@@ -90,6 +91,9 @@ export default function Home() {
   };
 
   const supportedNetworks = getSupportedNetworkDetails();
+  const activeNetworkConfig = getActiveNetworkConfig();
+  const activeNetworkName = getActiveNetworkName();
+  const activeNetworkDeployment = supportedNetworks.find(network => network.name === activeNetworkName);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
@@ -195,13 +199,11 @@ export default function Home() {
                   </h3>
                   <div className="text-sm text-blue-800 dark:text-blue-200 space-y-2">
                     <p>• Install MetaMask browser extension</p>
-                    <p>• Connect to one of the supported networks:</p>
+                    <p>• Connect to the configured network:</p>
                     <div className="ml-4 space-y-1">
-                      {supportedNetworks.map((network) => (
-                        <p key={network.name} className="font-mono text-xs">
-                          • {network.name} (Chain ID: {network.chainId})
-                        </p>
-                      ))}
+                      <p className="font-mono text-xs">
+                        • {activeNetworkConfig.displayName} (Chain ID: {activeNetworkConfig.chainId})
+                      </p>
                     </div>
                     <p>• Make sure you have test ETH in your wallet</p>
                   </div>
@@ -223,25 +225,20 @@ export default function Home() {
                     Unsupported Network: {networkName}
                   </h3>
                   <p className="text-sm text-red-800 dark:text-red-200 mb-2">
-                    This DApp only works on networks with deployed smart contracts. Please switch to one of the supported networks:
+                    This DApp only works on the configured network. Please switch to:
                   </p>
                   <div className="text-sm text-red-800 dark:text-red-200 space-y-1">
-                    {supportedNetworks.map((network) => (
-                      <p key={network.name} className="font-mono text-xs">
-                        • {network.name} (Chain ID: {network.chainId})
-                      </p>
-                    ))}
+                    <p className="font-mono text-xs">
+                      • {activeNetworkConfig.displayName} (Chain ID: {activeNetworkConfig.chainId})
+                    </p>
                   </div>
                   <div className="mt-3 flex flex-wrap gap-2">
-                    {supportedNetworks.map((network) => (
-                      <button
-                        key={network.name}
-                        onClick={() => switchToNetwork(network.name)}
-                        className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-xs rounded-md transition-colors duration-200"
-                      >
-                        Switch to {network.name}
-                      </button>
-                    ))}
+                    <button
+                      onClick={() => switchToNetwork(activeNetworkName)}
+                      className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-xs rounded-md transition-colors duration-200"
+                    >
+                      Switch to {activeNetworkConfig.displayName}
+                    </button>
                   </div>
                 </div>
               </div>
@@ -254,27 +251,42 @@ export default function Home() {
           {/* Contract Information */}
           <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-xl">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 text-center">
-              Contract Information
+              Contract Information ({activeNetworkConfig.displayName})
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-              {supportedNetworks.map((network) => (
-                <div key={network.name} className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
-                  <div className="font-medium text-gray-900 dark:text-white mb-2">
-                    {network.name}
+            <div className="text-sm">
+              {activeNetworkDeployment ? (
+                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="font-semibold text-gray-900 dark:text-white">
+                      {activeNetworkConfig.displayName}
+                    </div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400 font-mono">
+                      Chain ID: {activeNetworkConfig.chainId}
+                    </div>
                   </div>
-                  <div className="space-y-1 text-gray-600 dark:text-gray-300">
-                    <div>
-                      <span className="font-medium">Chain ID:</span> {network.chainId}
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium text-gray-700 dark:text-gray-300 text-xs">Address:</span>
+                    <div className="font-mono text-xs bg-white dark:bg-gray-800 px-2 py-1 rounded border text-gray-800 dark:text-gray-200 break-all flex-1">
+                      {activeNetworkDeployment.contractAddress}
                     </div>
-                    <div>
-                      <span className="font-medium">Address:</span>
-                      <div className="font-mono text-xs break-all mt-1">
-                        {network.contractAddress}
-                      </div>
-                    </div>
+                    <button
+                      onClick={() => navigator.clipboard.writeText(activeNetworkDeployment.contractAddress)}
+                      className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 p-1 hover:bg-gray-100 dark:hover:bg-gray-600 rounded transition-colors"
+                      title="Copy address"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                      </svg>
+                    </button>
                   </div>
                 </div>
-              ))}
+              ) : (
+                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 text-center">
+                  <p className="text-red-700 dark:text-red-300">
+                    No contract deployed for {activeNetworkConfig.displayName}
+                  </p>
+                </div>
+              )}
             </div>
           </div>
 
@@ -378,7 +390,7 @@ export default function Home() {
                 <div>
                   <p className="mb-2">Connect your wallet to interact with the counter</p>
                   <p className="text-xs">
-                    Supported networks: {supportedNetworks.map(n => n.name).join(', ')}
+                    Configured network: {activeNetworkConfig.displayName}
                   </p>
                 </div>
               ) : !isCorrectNetwork ? (
@@ -387,18 +399,15 @@ export default function Home() {
                     Network "{networkName}" detected - Auto-switching available
                   </p>
                   <p className="text-xs text-gray-400 dark:text-gray-300 mb-3">
-                    Click increment/decrement buttons to auto-switch to a supported network, or switch manually:
+                    Click increment/decrement buttons to auto-switch to the configured network, or switch manually:
                   </p>
                   <div className="flex flex-wrap gap-2 justify-center">
-                    {supportedNetworks.map((network) => (
-                      <button
-                        key={network.name}
-                        onClick={() => switchToNetwork(network.name)}
-                        className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded-md transition-colors duration-200"
-                      >
-                        Switch to {network.name}
-                      </button>
-                    ))}
+                    <button
+                      onClick={() => switchToNetwork(activeNetworkName)}
+                      className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded-md transition-colors duration-200"
+                    >
+                      Switch to {activeNetworkConfig.displayName}
+                    </button>
                   </div>
                 </div>
               ) : (
