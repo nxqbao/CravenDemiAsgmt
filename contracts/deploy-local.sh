@@ -13,7 +13,7 @@ echo "Deploying Counter contract..."
 forge script script/Counter.s.sol:CounterScript --rpc-url http://localhost:8545 --private-key 0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 --broadcast
 
 # Extract contract address from the output
-CONTRACT_ADDRESS=$(grep "Counter deployed at:" anvil.log | tail -1 | awk '{print $4}')
+CONTRACT_ADDRESS=$(grep "Contract created:" anvil.log | tail -1 | awk '{print $3}')
 
 # Build the project to generate ABI
 echo "Building project to generate ABI..."
@@ -24,9 +24,14 @@ echo "Creating deployment info..."
 mkdir -p ../frontend/lib/contracts
 cat > ../frontend/lib/contracts/deployment.json << EOF
 {
-  "contractAddress": "$CONTRACT_ADDRESS",
-  "network": "localhost",
-  "chainId": 31337
+  "localhost": {
+    "contractAddress": "$CONTRACT_ADDRESS",
+    "chainId": 31337
+  },
+  "monad-testnet": {
+    "contractAddress": "",
+    "chainId": 0
+  }
 }
 EOF
 
