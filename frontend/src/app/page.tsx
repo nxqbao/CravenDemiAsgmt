@@ -16,6 +16,7 @@ export default function Home() {
     getCountWithoutWallet,
     increment,
     decrement,
+    switchToNetwork,
   } = useWeb3();
 
   const [count, setCount] = useState<number>(0);
@@ -231,9 +232,17 @@ export default function Home() {
                       </p>
                     ))}
                   </div>
-                  <p className="text-xs text-red-700 dark:text-red-300 mt-2 font-medium">
-                    All counter functions are disabled until you switch to a supported network.
-                  </p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {supportedNetworks.map((network) => (
+                      <button
+                        key={network.name}
+                        onClick={() => switchToNetwork(network.name)}
+                        className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-xs rounded-md transition-colors duration-200"
+                      >
+                        Switch to {network.name}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
@@ -296,9 +305,9 @@ export default function Home() {
             <div className="flex gap-4 justify-center mb-6">
               <button
                 onClick={handleDecrement}
-                disabled={!account || isDecrementing || isLoadingCount || !isCorrectNetwork}
+                disabled={!account || isDecrementing || isLoadingCount}
                 className={`flex-1 font-semibold py-3 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 ${
-                  !account || !isCorrectNetwork
+                  !account
                     ? 'bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-600 dark:text-gray-400' 
                     : 'bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white'
                 }`}
@@ -323,16 +332,16 @@ export default function Home() {
                         d="M20 12H4"
                       />
                     </svg>
-                    Decrement
+                    {!account ? 'Decrement' : !isCorrectNetwork ? 'Switch & Decrement' : 'Decrement'}
                   </>
                 )}
               </button>
 
               <button
                 onClick={handleIncrement}
-                disabled={!account || isIncrementing || isLoadingCount || !isCorrectNetwork}
+                disabled={!account || isIncrementing || isLoadingCount}
                 className={`flex-1 font-semibold py-3 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2 ${
-                  !account || !isCorrectNetwork
+                  !account
                     ? 'bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-600 dark:text-gray-400' 
                     : 'bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white'
                 }`}
@@ -357,7 +366,7 @@ export default function Home() {
                         d="M12 6v6m0 0v6m0-6h6m-6 0H6"
                       />
                     </svg>
-                    Increment
+                    {!account ? 'Increment' : !isCorrectNetwork ? 'Switch & Increment' : 'Increment'}
                   </>
                 )}
               </button>
@@ -374,15 +383,31 @@ export default function Home() {
                 </div>
               ) : !isCorrectNetwork ? (
                 <div>
-                  <p className="text-red-500 dark:text-red-400 font-medium mb-1">
-                    Network "{networkName}" is not supported
+                  <p className="text-orange-500 dark:text-orange-400 font-medium mb-2">
+                    Network "{networkName}" detected - Auto-switching available
                   </p>
-                  <p className="text-xs text-red-400 dark:text-red-300">
-                    Switch to: {supportedNetworks.map(n => `${n.name} (${n.chainId})`).join(' or ')}
+                  <p className="text-xs text-gray-400 dark:text-gray-300 mb-3">
+                    Click increment/decrement buttons to auto-switch to a supported network, or switch manually:
                   </p>
+                  <div className="flex flex-wrap gap-2 justify-center">
+                    {supportedNetworks.map((network) => (
+                      <button
+                        key={network.name}
+                        onClick={() => switchToNetwork(network.name)}
+                        className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded-md transition-colors duration-200"
+                      >
+                        Switch to {network.name}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               ) : (
-                <p>Each transaction costs gas and requires MetaMask confirmation</p>
+                <div>
+                  <p className="text-green-600 dark:text-green-400 font-medium mb-1">
+                    Connected to {networkName} - Ready for transactions!
+                  </p>
+                  <p className="text-xs">Each transaction costs gas and requires MetaMask confirmation</p>
+                </div>
               )}
             </div>
           </div>

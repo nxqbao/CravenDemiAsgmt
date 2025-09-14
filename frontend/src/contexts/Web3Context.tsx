@@ -10,6 +10,7 @@ import {
   isNetworkSupported,
   getSupportedNetworks,
   getReadOnlyContract,
+  switchToNetwork,
 } from '../lib/web3';
 import toast from 'react-hot-toast';
 
@@ -120,7 +121,36 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
     return Number(count);
   }, []);
 
+  const switchToSupportedNetwork = useCallback(async (targetNetworkName: string): Promise<boolean> => {
+    try {
+      const success = await switchToNetwork(targetNetworkName);
+      if (success) {
+        toast.success(`Switched to ${targetNetworkName} network`);
+      } else {
+        toast.error(`Failed to switch to ${targetNetworkName} network`);
+      }
+      return success;
+    } catch (error) {
+      console.error('Network switch error:', error);
+      toast.error(`Error switching to ${targetNetworkName}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      return false;
+    }
+  }, []);
+
   const increment = useCallback(async () => {
+    // If not on correct network, try to switch to a supported one
+    if (!isCorrectNetwork && account) {
+      const supportedNetworks = getSupportedNetworks();
+      if (supportedNetworks.length > 0) {
+        const switched = await switchToSupportedNetwork(supportedNetworks[0]);
+        if (!switched) {
+          throw new Error('Please switch to a supported network to perform transactions');
+        }
+        // Wait a moment for the network switch to complete
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+    }
+
     if (!contract) {
       throw new Error('Contract not initialized');
     }
@@ -136,9 +166,22 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
       toast.error('Failed to increment counter', { id: 'increment' });
       throw error;
     }
-  }, [contract]);
+  }, [contract, isCorrectNetwork, account, switchToSupportedNetwork]);
 
   const decrement = useCallback(async () => {
+    // If not on correct network, try to switch to a supported one
+    if (!isCorrectNetwork && account) {
+      const supportedNetworks = getSupportedNetworks();
+      if (supportedNetworks.length > 0) {
+        const switched = await switchToSupportedNetwork(supportedNetworks[0]);
+        if (!switched) {
+          throw new Error('Please switch to a supported network to perform transactions');
+        }
+        // Wait a moment for the network switch to complete
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+    }
+
     if (!contract) {
       throw new Error('Contract not initialized');
     }
@@ -154,7 +197,7 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
       toast.error('Failed to decrement counter', { id: 'decrement' });
       throw error;
     }
-  }, [contract]);
+  }, [contract, isCorrectNetwork, account, switchToSupportedNetwork]);
 
   // Listen for account changes
   useEffect(() => {
@@ -229,6 +272,7 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
     getCountWithoutWallet,
     increment,
     decrement,
+    switchToNetwork: switchToSupportedNetwork,
   };
 
   return <Web3Context.Provider value={value}>{children}</Web3Context.Provider>;

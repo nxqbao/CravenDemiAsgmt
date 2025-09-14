@@ -26,6 +26,7 @@ export interface Web3ContextType {
   getCountWithoutWallet: (networkName: string) => Promise<number>;
   increment: () => Promise<void>;
   decrement: () => Promise<void>;
+  switchToNetwork: (networkName: string) => Promise<boolean>;
 }
 export const connectToMetaMask = async (): Promise<{
   provider: ethers.BrowserProvider;
@@ -150,6 +151,81 @@ export const getReadOnlyContract = (networkName: string): ethers.Contract | null
     console.error(`Failed to create read-only contract for ${networkName}:`, error);
     return null;
   }
+};
+
+export const switchToNetwork = async (networkName: string): Promise<boolean> => {
+  if (!window.ethereum) {
+    throw new Error('MetaMask is not installed');
+  }
+
+  const networkDeployment = getDeploymentForNetwork(networkName);
+  if (!networkDeployment) {
+    throw new Error(`Network ${networkName} not supported`);
+  }
+
+  const chainIdHex = `0x${networkDeployment.chainId.toString(16)}`;
+
+  try {
+    // Try to switch to the network
+    await window.ethereum.request({
+      method: 'wallet_switchEthereumChain',
+      params: [{ chainId: chainIdHex }],
+    });
+    return true;
+  } catch (switchError: any) {
+    // If the network is not added to MetaMask, add it
+    if (switchError.code === 4902) {
+      try {
+        await window.ethereum.request({
+          method: 'wallet_addEthereumChain',
+          params: [
+            {
+              chainId: chainIdHex,
+              chainName: getNetworkDisplayName(networkName),
+              nativeCurrency: {
+                name: 'ETH',
+                symbol: 'ETH',
+                decimals: 18,
+              },
+              rpcUrls: [getRpcUrl(networkName)],
+              blockExplorerUrls: getBlockExplorerUrls(networkName),
+            },
+          ],
+        });
+        return true;
+      } catch (addError) {
+        console.error('Failed to add network:', addError);
+        return false;
+      }
+    } else {
+      console.error('Failed to switch network:', switchError);
+      return false;
+    }
+  }
+};
+
+const getNetworkDisplayName = (networkName: string): string => {
+  const displayNames: { [key: string]: string } = {
+    'localhost': 'Localhost 8545',
+    'monad-testnet': 'Monad Testnet',
+  };
+  return displayNames[networkName] || networkName;
+};
+
+const getRpcUrl = (networkName: string): string => {
+  const rpcUrls: { [key: string]: string } = {
+    'localhost': 'http://localhost:8545',
+    'monad-testnet': 'https://testnet1.monad.xyz',
+  };
+  return rpcUrls[networkName] || '';
+};
+
+const getBlockExplorerUrls = (networkName: string): string[] => {
+  const explorerUrls: { [key: string]: string[] } = {
+    'localhost': ['http://localhost:8545'],
+    'monad-testnet': ['https://testnet1.monad.xyz'], // Replace with actual explorer
+  };
+  return explorerUrls[networkName] || [];
 };
 
 declare global {
