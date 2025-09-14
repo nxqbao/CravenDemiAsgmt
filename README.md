@@ -8,7 +8,7 @@ A decentralized counter application built with Solidity, Next.js, and Ethers.js.
 - **Frontend**: Next.js 15 with TypeScript, Tailwind CSS, and responsive design
 - **Blockchain Interaction**: Ethers.js v6 for modern, type-safe Web3 integration
 - **Multi-Network Support**: Local development (Anvil), Worldcoin Sepolia testnet
-- **Testing**: Foundry for smart contracts, Vitest for frontend
+- **Testing**: Foundry for smart contracts
 - **CI/CD**: GitHub Actions with automated testing and Vercel deployment
 - **Linting**: ESLint + Prettier with strict code quality standards
 
@@ -22,7 +22,6 @@ A decentralized counter application built with Solidity, Next.js, and Ethers.js.
 - ✅ **Toast Notifications**: Real-time feedback for all user actions using react-hot-toast
 - ✅ **Responsive Design**: Mobile-first UI with dark mode support
 - ✅ **Type Safety**: Full TypeScript implementation with strict typing
-- ✅ **Automated Testing**: Smart contract and frontend test suites
 - ✅ **CI/CD Pipeline**: GitHub Actions with automated deployment to Vercel
 
 ## 🚀 Quick Start
@@ -95,19 +94,6 @@ forge test -v
 - ✅ Prevention of negative values
 - ✅ Multiple operations sequence
 
-### Frontend Tests
-Basic test setup with Vitest framework:
-
-```bash
-cd frontend
-npm test
-```
-
-**Current Tests**:
-- Basic test setup for Web3 utilities
-- Basic test setup for Web3 context
-- Framework ready for comprehensive component and integration tests
-
 ### Linting & Code Quality
 ```bash
 cd frontend
@@ -122,11 +108,11 @@ npm run format         # Format code with Prettier
 - TypeScript strict mode enabled
 - No linting errors in production code
 
-### CI/CD Testing
-Automated testing via GitHub Actions:
+### CI/CD Pipeline
+Automated validation via GitHub Actions:
 - Smart contract compilation and tests
-- Frontend linting and tests
-- Vercel deployment on successful tests
+- Frontend linting and build validation
+- Vercel deployment on successful validation
 
 ## 📁 Project Structure
 
@@ -151,14 +137,12 @@ Automated testing via GitHub Actions:
 │   │   │   └── Web3Context.tsx   # Web3 wallet & contract provider
 │   │   └── lib/                  # Utilities and configurations
 │   │       ├── config.ts         # Network configuration
-│   │       ├── web3.ts           # Web3 utilities & contract interactions
-│   │       └── __tests__/        # Frontend tests
+│   │       └── web3.ts           # Web3 utilities & contract interactions
 │   ├── lib/contracts/            # Contract ABIs and deployment info
 │   │   ├── deployment.json       # Network-specific contract addresses
 │   │   ├── Counter.json          # Contract ABI
 │   │   └── CounterABI.json       # Extracted ABI for frontend use
 │   ├── package.json              # Dependencies and scripts
-│   ├── vitest.config.ts          # Test configuration
 │   └── eslint.config.mjs         # Linting configuration
 ├── .github/workflows/ci-cd.yml   # GitHub Actions CI/CD pipeline
 ├── start-demo.sh                 # One-click demo script
@@ -315,37 +299,6 @@ See `WORLDCOIN_DEPLOYMENT.md` for detailed deployment instructions.
 - Smart contract tests provide comprehensive coverage
 - Frontend tests are set up but can be expanded for component testing
 - CI/CD pipeline ensures code quality and automated deployment
-
-## ✅ Assignment Requirements Status
-
-This project fulfills all requirements from the Web3 Engineer Take-Home Assignment:
-
-### ✅ Part 1: Smart Contract Development
-- ✅ Counter contract with increment/decrement functionality
-- ✅ Foundry development environment
-- ✅ Comprehensive unit tests
-- ✅ ABI export and address management
-- ✅ Deployment to Monad testnet (Worldcoin Sepolia used instead)
-
-### ✅ Part 2: Frontend Development
-- ✅ Next.js application with TypeScript
-- ✅ MetaMask wallet integration
-- ✅ Contract read/write operations
-- ✅ Loading states and error handling
-- ✅ Transaction confirmations with toast notifications
-- ✅ Responsive UI design
-
-### ✅ Part 3: Testing and Linting
-- ✅ Smart contract tests with Foundry
-- ✅ Frontend test setup with Vitest
-- ✅ ESLint + Prettier configuration
-- ✅ No linting errors in codebase
-
-### ✅ Part 4: CI/CD Pipeline
-- ✅ GitHub Actions workflow
-- ✅ Automated testing and linting
-- ✅ Vercel deployment configuration
-- ✅ Deployment scripts and instructions
 
 ## 🤝 Contributing
 
