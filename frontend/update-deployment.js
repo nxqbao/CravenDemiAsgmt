@@ -6,8 +6,10 @@
  * Example: node update-deployment.js localhost 0x5FbDB2315678afecb367f032d93F642f64180aa3
  */
 
+/* eslint-disable @typescript-eslint/no-require-imports */
 const fs = require('fs');
 const path = require('path');
+/* eslint-enable @typescript-eslint/no-require-imports */
 
 const args = process.argv.slice(2);
 
