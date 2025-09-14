@@ -260,7 +260,41 @@ This script will:
 
 ## 🛠️ Tech Stack Justification
 
-**Ethers.js v6 over Web3.js**: Chosen for its modern async/await API, excellent TypeScript support, smaller bundle size, and active maintenance. Ethers.js v6 provides better developer experience with improved error handling and modern JavaScript patterns.
+### **Web3 Library Choice: Ethers.js v6**
+
+**Why Ethers.js over Web3.js and other alternatives:**
+
+#### **🔧 Modern API Design**
+- **Promise-based**: Uses modern JavaScript Promises instead of callbacks, enabling cleaner `async/await` syntax
+- **ES6 Modules**: Full ES6 module support with tree-shaking friendly imports
+- **TypeScript First**: Excellent TypeScript support with comprehensive type definitions out-of-the-box
+
+#### **📦 Bundle Size & Performance**
+- **Smaller footprint**: ~150KB gzipped vs Web3.js ~500KB+ (significant reduction for web applications)
+- **Tree-shaking friendly**: Only imports what you use, reducing final bundle size
+- **Lightweight core**: Focused on essential functionality without bloat
+
+#### **🛡️ Developer Experience**
+- **Better error handling**: More descriptive error messages and structured error types
+- **Intuitive API**: Method names and patterns are more predictable and easier to learn
+- **Comprehensive documentation**: Extensive guides, examples, and API reference
+
+#### **🔄 Active Maintenance**
+- **Regular updates**: Frequent releases with security patches and new features
+- **Active community**: Large developer community with good support
+- **Future-proof**: Designed with modern JavaScript standards and best practices
+
+#### **⚡ Performance Benefits**
+- **Faster initialization**: Lightweight design means quicker startup times
+- **Efficient RPC handling**: Optimized network request patterns
+- **Memory efficient**: Lower memory footprint in browser environments
+
+#### **🧪 Alternative Evaluation**
+- **Web3.js**: While popular, it has a callback-based API and larger bundle size
+- **viem**: Excellent modern alternative, but Ethers.js has better documentation and broader adoption
+- **web3-react**: Framework-specific, while Ethers.js is library-agnostic
+
+**Result**: Ethers.js v6 provides the best balance of modern development experience, performance, and maintainability for this Web3 application.
 
 **Foundry over Hardhat**: Selected for faster compilation, better testing framework, and superior developer experience. Foundry's Rust-based architecture provides significant performance improvements over Hardhat's JavaScript implementation.
 
