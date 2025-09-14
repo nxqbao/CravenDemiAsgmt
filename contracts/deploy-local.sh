@@ -38,6 +38,9 @@ EOF
 # Copy ABI file
 cp out/Counter.sol/Counter.json ../frontend/lib/contracts/
 
+# Extract and copy ABI-only file
+node -e "const fs = require('fs'); const data = JSON.parse(fs.readFileSync('out/Counter.sol/Counter.json', 'utf8')); fs.writeFileSync('../frontend/lib/contracts/CounterABI.json', JSON.stringify(data.abi, null, 2));"
+
 echo "Deployment complete!"
 echo "Contract Address: $CONTRACT_ADDRESS"
 echo "ABI and deployment info exported to frontend/lib/contracts/"

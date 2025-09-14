@@ -1,6 +1,6 @@
 import { ethers } from 'ethers';
-import CounterABI from '../lib/contracts/Counter.json';
-import deployment from '../lib/contracts/deployment.json';
+import CounterABI from '../../lib/contracts/CounterABI.json';
+import deployment from '../../lib/contracts/deployment.json';
 
 export interface NetworkDeployment {
   contractAddress: string;
@@ -25,11 +25,6 @@ export interface Web3ContextType {
   increment: () => Promise<void>;
   decrement: () => Promise<void>;
 }
-
-export const getContract = (signer: ethers.Signer): ethers.Contract => {
-  return new ethers.Contract(deployment.contractAddress, CounterABI.abi, signer);
-};
-
 export const connectToMetaMask = async (): Promise<{
   provider: ethers.BrowserProvider;
   signer: ethers.Signer;
@@ -73,7 +68,7 @@ export const getContractForNetwork = (
   if (!networkDeployment || !networkDeployment.contractAddress) {
     return null;
   }
-  return new ethers.Contract(networkDeployment.contractAddress, CounterABI.abi, signer);
+  return new ethers.Contract(networkDeployment.contractAddress, CounterABI, signer);
 };
 
 declare global {

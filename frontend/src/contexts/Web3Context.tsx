@@ -119,7 +119,8 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
   // Listen for account changes
   useEffect(() => {
     if (window.ethereum) {
-      const handleAccountsChanged = (accounts: string[]) => {
+      const handleAccountsChanged = (...args: unknown[]) => {
+        const accounts = args[0] as string[];
         if (accounts.length === 0) {
           disconnectWallet();
         } else if (accounts[0] !== account) {
@@ -139,7 +140,8 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
   // Listen for network changes
   useEffect(() => {
     if (window.ethereum && signer) {
-      const handleChainChanged = async (newChainId: string) => {
+      const handleChainChanged = async (...args: unknown[]) => {
+        const newChainId = args[0] as string;
         const numericChainId = parseInt(newChainId, 16);
         const newNetworkName = getNetworkName(numericChainId);
 
