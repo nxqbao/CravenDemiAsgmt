@@ -154,9 +154,30 @@ forge script script/Counter.s.sol:CounterScript --rpc-url $RPC_URL --private-key
 
 ### Frontend Deployment
 
-The application is automatically deployed to Vercel on pushes to the main branch via GitHub Actions.
+The frontend can be deployed independently to Vercel by importing only the `frontend/` folder:
+
+1. Connect your GitHub repository to Vercel
+2. Import only the `frontend/` folder as the root directory
+3. The frontend includes all necessary contract ABIs and deployment information
+4. Configure build settings if needed (Next.js should auto-detect)
 
 **Live Demo**: [Vercel URL will be added after deployment]
+
+### Standalone Frontend Development
+
+If you only have the `frontend/` folder, you can still develop and deploy it independently:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+To update contract deployment information:
+
+```bash
+npm run update-deployment <network> <contractAddress>
+```
 
 ## 🛠️ Tech Stack Justification
 
