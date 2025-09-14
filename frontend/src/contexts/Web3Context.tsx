@@ -40,9 +40,12 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
         chainId: newChainId,
       } = await connectToMetaMask();
 
+      console.log('MetaMask connection successful:', { account: newAccount, networkName: newNetworkName });
+
       const newContract = getContractForNetwork(newSigner, newNetworkName);
 
       if (!newContract) {
+        console.warn(`No contract deployed on ${newNetworkName} network`);
         toast.error(`No contract deployed on ${newNetworkName} network`);
       }
 
@@ -56,7 +59,7 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
       toast.success(`Wallet connected to ${newNetworkName}!`);
     } catch (error) {
       console.error('Failed to connect wallet:', error);
-      toast.error('Failed to connect wallet. Make sure MetaMask is installed.');
+      toast.error(`Failed to connect wallet: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setIsConnecting(false);
     }

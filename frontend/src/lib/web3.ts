@@ -33,17 +33,35 @@ export const connectToMetaMask = async (): Promise<{
   chainId: number;
 }> => {
   if (!window.ethereum) {
-    throw new Error('MetaMask is not installed');
+    throw new Error('MetaMask is not installed. Please install MetaMask extension.');
   }
 
-  const provider = new ethers.BrowserProvider(window.ethereum);
-  const signer = await provider.getSigner();
-  const account = await signer.getAddress();
-  const network = await provider.getNetwork();
-  const chainId = Number(network.chainId);
-  const networkName = getNetworkName(chainId);
+  try {
+    // Request account access
+    console.log('Requesting MetaMask account access...');
+    await window.ethereum.request({ method: 'eth_requestAccounts' });
 
-  return { provider, signer, account, networkName, chainId };
+    const provider = new ethers.BrowserProvider(window.ethereum);
+    const signer = await provider.getSigner();
+    const account = await signer.getAddress();
+    const network = await provider.getNetwork();
+    const chainId = Number(network.chainId);
+    const networkName = getNetworkName(chainId);
+
+    console.log('MetaMask connection details:', { account, chainId, networkName });
+
+    return { provider, signer, account, networkName, chainId };
+  } catch (error) {
+    console.error('MetaMask connection error:', error);
+    if (error instanceof Error) {
+      if (error.message.includes('User rejected')) {
+        throw new Error('User rejected the request to connect to MetaMask.');
+      } else if (error.message.includes('Already processing')) {
+        throw new Error('MetaMask is already processing a request. Please wait.');
+      }
+    }
+    throw new Error('Failed to connect to MetaMask. Please try again.');
+  }
 };
 
 // Network name mapping
