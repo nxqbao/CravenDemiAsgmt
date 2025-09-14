@@ -136,7 +136,7 @@ temp/
 # Compiler files
 cache/
 out/
-lib/
+contracts/lib/
 
 # Ignores development broadcast logs
 broadcast/
