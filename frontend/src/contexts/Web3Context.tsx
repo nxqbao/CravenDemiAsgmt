@@ -173,7 +173,20 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
       toast.success('Counter incremented successfully!', { id: 'increment' });
     } catch (error) {
       console.error('Failed to increment:', error);
-      toast.error('Failed to increment counter', { id: 'increment' });
+
+      // Provide more specific error messages
+      let errorMessage = 'Failed to increment counter';
+      if (error instanceof Error) {
+        if (error.message.includes('User rejected')) {
+          errorMessage = 'Transaction cancelled by user';
+        } else if (error.message.includes('insufficient funds')) {
+          errorMessage = 'Insufficient funds for transaction';
+        } else if (error.message.includes('network')) {
+          errorMessage = 'Network error - please check your connection';
+        }
+      }
+
+      toast.error(errorMessage, { id: 'increment' });
       throw error;
     }
   }, [contract, isCorrectNetwork, account, switchToSupportedNetwork]);
@@ -204,7 +217,22 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
       toast.success('Counter decremented successfully!', { id: 'decrement' });
     } catch (error) {
       console.error('Failed to decrement:', error);
-      toast.error('Failed to decrement counter', { id: 'decrement' });
+
+      // Provide more specific error messages
+      let errorMessage = 'Failed to decrement counter';
+      if (error instanceof Error) {
+        if (error.message.includes('User rejected')) {
+          errorMessage = 'Transaction cancelled by user';
+        } else if (error.message.includes('insufficient funds')) {
+          errorMessage = 'Insufficient funds for transaction';
+        } else if (error.message.includes('network')) {
+          errorMessage = 'Network error - please check your connection';
+        } else if (error.message.includes('Count cannot go below 0')) {
+          errorMessage = 'Cannot decrement below zero';
+        }
+      }
+
+      toast.error(errorMessage, { id: 'decrement' });
       throw error;
     }
   }, [contract, isCorrectNetwork, account, switchToSupportedNetwork]);

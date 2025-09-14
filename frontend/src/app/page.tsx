@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useWeb3 } from '../contexts/Web3Context';
 import { getSupportedNetworkDetails } from '../lib/web3';
 import { getActiveNetworkConfig, getActiveNetworkName } from '../lib/config';
+import toast from 'react-hot-toast';
 
 export default function Home() {
   const {
@@ -67,6 +68,14 @@ export default function Home() {
       setCount(newCount);
     } catch (error) {
       console.error('Increment failed:', error);
+      // Show error toast if not already shown by the increment function
+      if (
+        !error ||
+        !(error instanceof Error) ||
+        !error.message.includes('Transaction cancelled by user')
+      ) {
+        toast.error('Failed to increment counter');
+      }
     } finally {
       setIsIncrementing(false);
     }
@@ -81,6 +90,14 @@ export default function Home() {
       setCount(newCount);
     } catch (error) {
       console.error('Decrement failed:', error);
+      // Show error toast if not already shown by the decrement function
+      if (
+        !error ||
+        !(error instanceof Error) ||
+        !error.message.includes('Transaction cancelled by user')
+      ) {
+        toast.error('Failed to decrement counter');
+      }
     } finally {
       setIsDecrementing(false);
     }
