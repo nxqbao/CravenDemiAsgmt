@@ -12,6 +12,7 @@ import {
   getReadOnlyContract,
   switchToNetwork,
 } from '../lib/web3';
+import { getActiveNetworkConfig, getActiveNetworkName } from '../lib/config';
 import toast from 'react-hot-toast';
 
 const Web3Context = createContext<Web3ContextType | undefined>(undefined);
@@ -50,6 +51,46 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
         networkName: newNetworkName,
       });
 
+      // Check if we're on the correct network, if not, switch
+      const activeNetworkConfig = getActiveNetworkConfig();
+      const activeNetworkName = getActiveNetworkName();
+
+      if (chainId !== activeNetworkConfig.chainId) {
+        console.log(`Switching from ${newNetworkName} to ${activeNetworkName}`);
+        try {
+          const switched = await switchToNetwork(activeNetworkName);
+          if (switched) {
+            // Reconnect to get updated network info
+            const updatedConnection = await connectToMetaMask();
+            const updatedContract = getContractForNetwork(
+              updatedConnection.signer,
+              activeNetworkName
+            );
+            const updatedNetworkSupported = isNetworkSupported(activeNetworkName);
+
+            setProvider(updatedConnection.provider);
+            setSigner(updatedConnection.signer);
+            setContract(updatedContract);
+            setAccount(updatedConnection.account);
+            setNetworkName(activeNetworkName);
+            setChainId(activeNetworkConfig.chainId);
+            setIsCorrectNetwork(updatedNetworkSupported);
+
+            toast.success(`Connected to ${activeNetworkConfig.displayName}!`);
+            return;
+          } else {
+            toast.error(`Failed to switch to ${activeNetworkConfig.displayName}`);
+            return;
+          }
+        } catch (switchError) {
+          console.error('Failed to switch network:', switchError);
+          toast.error(
+            `Please manually switch to ${activeNetworkConfig.displayName} (Chain ID: ${activeNetworkConfig.chainId})`
+          );
+          return;
+        }
+      }
+
       const newContract = getContractForNetwork(newSigner, newNetworkName);
       const networkSupported = isNetworkSupported(newNetworkName);
 
@@ -75,7 +116,7 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
     } finally {
       setIsConnecting(false);
     }
-  }, []);
+  }, [chainId]);
 
   const disconnectWallet = useCallback(async () => {
     try {
