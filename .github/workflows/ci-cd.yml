@@ -1,0 +1,91 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test-contracts:
+    name: Test Smart Contracts
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install Foundry
+      uses: foundry-rs/foundry-toolchain@v1
+
+    - name: Install dependencies
+      working-directory: ./contracts
+      run: forge install
+
+    - name: Run contract tests
+      working-directory: ./contracts
+      run: forge test -v
+
+    - name: Build contracts
+      working-directory: ./contracts
+      run: forge build
+
+  test-frontend:
+    name: Test Frontend
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+
+    - name: Install dependencies
+      working-directory: ./frontend
+      run: npm ci
+
+    - name: Run linter
+      working-directory: ./frontend
+      run: npm run lint -- --ignore-pattern "next-env.d.ts"
+
+    - name: Run frontend tests
+      working-directory: ./frontend
+      run: npm test -- --run
+
+    - name: Build frontend
+      working-directory: ./frontend
+      run: npm run build
+
+  deploy:
+    name: Deploy to Vercel
+    needs: [test-contracts, test-frontend]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+
+    - name: Install Vercel CLI
+      run: npm install -g vercel
+
+    - name: Deploy to Vercel
+      working-directory: ./frontend
+      run: |
+        vercel --prod --yes
+      env:
+        VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
