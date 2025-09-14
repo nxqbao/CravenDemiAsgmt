@@ -46,11 +46,14 @@ export const connectToMetaMask = async (): Promise<{
     try {
       await window.ethereum.request({
         method: 'wallet_requestPermissions',
-        params: [{ eth_accounts: {} }]
+        params: [{ eth_accounts: {} }],
       });
     } catch (permError) {
       // If wallet_requestPermissions is not supported, fall back to eth_requestAccounts
-      console.warn('wallet_requestPermissions not supported, using eth_requestAccounts:', permError);
+      console.warn(
+        'wallet_requestPermissions not supported, using eth_requestAccounts:',
+        permError
+      );
     }
 
     // Request account access - this should now show the account selection dialog
@@ -108,27 +111,42 @@ export const getContractForNetwork = (
 
 export const isNetworkSupported = (networkName: string): boolean => {
   const networkDeployment = getDeploymentForNetwork(networkName);
-  return !!(networkDeployment && networkDeployment.contractAddress && networkDeployment.contractAddress !== "");
+  return !!(
+    networkDeployment &&
+    networkDeployment.contractAddress &&
+    networkDeployment.contractAddress !== ''
+  );
 };
 
 export const getSupportedNetworks = (): string[] => {
   const config = deployment as DeploymentConfig;
   const activeNetwork = getActiveNetworkName();
-  return Object.keys(config).filter(networkName => {
+  return Object.keys(config).filter((networkName) => {
     const deployment = config[networkName];
-    return networkName === activeNetwork && deployment.contractAddress && deployment.contractAddress !== "";
+    return (
+      networkName === activeNetwork &&
+      deployment.contractAddress &&
+      deployment.contractAddress !== ''
+    );
   });
 };
 
-export const getSupportedNetworkDetails = (): { name: string; chainId: number; contractAddress: string }[] => {
+export const getSupportedNetworkDetails = (): {
+  name: string;
+  chainId: number;
+  contractAddress: string;
+}[] => {
   const config = deployment as DeploymentConfig;
   const activeNetwork = getActiveNetworkName();
   return Object.entries(config)
-    .filter(([name, deployment]) => name === activeNetwork && deployment.contractAddress && deployment.contractAddress !== "")
+    .filter(
+      ([name, deployment]) =>
+        name === activeNetwork && deployment.contractAddress && deployment.contractAddress !== ''
+    )
     .map(([name, deployment]) => ({
       name,
       chainId: deployment.chainId,
-      contractAddress: deployment.contractAddress
+      contractAddress: deployment.contractAddress,
     }));
 };
 
@@ -137,7 +155,7 @@ export const getReadOnlyContract = (networkName: string): ethers.Contract | null
   if (!networkDeployment || !networkDeployment.contractAddress) {
     return null;
   }
-  
+
   // Create a read-only provider for the specific network
   let rpcUrl: string;
   if (networkName === 'localhost') {
@@ -149,7 +167,7 @@ export const getReadOnlyContract = (networkName: string): ethers.Contract | null
   } else {
     return null;
   }
-  
+
   try {
     const provider = new ethers.JsonRpcProvider(rpcUrl);
     return new ethers.Contract(networkDeployment.contractAddress, CounterABI, provider);
@@ -178,9 +196,14 @@ export const switchToNetwork = async (networkName: string): Promise<boolean> => 
       params: [{ chainId: chainIdHex }],
     });
     return true;
-  } catch (switchError: any) {
+  } catch (switchError: unknown) {
     // If the network is not added to MetaMask, add it
-    if (switchError.code === 4902) {
+    if (
+      switchError &&
+      typeof switchError === 'object' &&
+      'code' in switchError &&
+      switchError.code === 4902
+    ) {
       try {
         await window.ethereum.request({
           method: 'wallet_addEthereumChain',
@@ -208,7 +231,7 @@ export const switchToNetwork = async (networkName: string): Promise<boolean> => 
 
 const getNetworkDisplayName = (networkName: string): string => {
   const displayNames: { [key: string]: string } = {
-    'localhost': 'Localhost 8545',
+    localhost: 'Localhost 8545',
     'monad-testnet': 'Monad Testnet',
     'worldcoin-sepolia': 'Worldcoin Sepolia Testnet',
   };
@@ -217,7 +240,7 @@ const getNetworkDisplayName = (networkName: string): string => {
 
 const getNativeCurrency = (networkName: string) => {
   const currencies: { [key: string]: { name: string; symbol: string; decimals: number } } = {
-    'localhost': { name: 'ETH', symbol: 'ETH', decimals: 18 },
+    localhost: { name: 'ETH', symbol: 'ETH', decimals: 18 },
     'monad-testnet': { name: 'MONAD', symbol: 'MON', decimals: 18 },
     'worldcoin-sepolia': { name: 'ETH', symbol: 'ETH', decimals: 18 },
   };
@@ -226,7 +249,7 @@ const getNativeCurrency = (networkName: string) => {
 
 const getRpcUrl = (networkName: string): string => {
   const rpcUrls: { [key: string]: string } = {
-    'localhost': 'http://localhost:8545',
+    localhost: 'http://localhost:8545',
     'monad-testnet': 'https://testnet1.monad.xyz',
     'worldcoin-sepolia': 'https://worldchain-sepolia.g.alchemy.com/public',
   };
@@ -235,7 +258,7 @@ const getRpcUrl = (networkName: string): string => {
 
 const getBlockExplorerUrls = (networkName: string): string[] => {
   const explorerUrls: { [key: string]: string[] } = {
-    'localhost': ['http://localhost:8545'],
+    localhost: ['http://localhost:8545'],
     'monad-testnet': ['https://monad-testnet.socialscan.io/'], // Replace with actual explorer
     'worldcoin-sepolia': ['https://sepolia.worldscan.org/'],
   };

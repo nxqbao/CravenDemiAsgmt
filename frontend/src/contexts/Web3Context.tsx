@@ -45,7 +45,10 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
         chainId: newChainId,
       } = await connectToMetaMask();
 
-      console.log('MetaMask connection successful:', { account: newAccount, networkName: newNetworkName });
+      console.log('MetaMask connection successful:', {
+        account: newAccount,
+        networkName: newNetworkName,
+      });
 
       const newContract = getContractForNetwork(newSigner, newNetworkName);
       const networkSupported = isNetworkSupported(newNetworkName);
@@ -66,7 +69,9 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
       toast.success(`Wallet connected to ${newNetworkName}!`);
     } catch (error) {
       console.error('Failed to connect wallet:', error);
-      toast.error(`Failed to connect wallet: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      toast.error(
+        `Failed to connect wallet: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     } finally {
       setIsConnecting(false);
     }
@@ -82,21 +87,21 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
       setNetworkName(null);
       setChainId(null);
       setIsCorrectNetwork(false);
-      
+
       // Clear any cached permissions in MetaMask (if supported)
       if (window.ethereum && window.ethereum.request) {
         try {
           // This will revoke the connection permission and force MetaMask to show the dialog next time
           await window.ethereum.request({
             method: 'wallet_revokePermissions',
-            params: [{ eth_accounts: {} }]
+            params: [{ eth_accounts: {} }],
           });
         } catch (error) {
           // wallet_revokePermissions might not be supported in all MetaMask versions
           console.warn('wallet_revokePermissions not supported:', error);
         }
       }
-      
+
       toast.success('Wallet disconnected - MetaMask will prompt for reconnection');
     } catch (error) {
       console.error('Error during disconnect:', error);
@@ -121,21 +126,26 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
     return Number(count);
   }, []);
 
-  const switchToSupportedNetwork = useCallback(async (targetNetworkName: string): Promise<boolean> => {
-    try {
-      const success = await switchToNetwork(targetNetworkName);
-      if (success) {
-        toast.success(`Switched to ${targetNetworkName} network`);
-      } else {
-        toast.error(`Failed to switch to ${targetNetworkName} network`);
+  const switchToSupportedNetwork = useCallback(
+    async (targetNetworkName: string): Promise<boolean> => {
+      try {
+        const success = await switchToNetwork(targetNetworkName);
+        if (success) {
+          toast.success(`Switched to ${targetNetworkName} network`);
+        } else {
+          toast.error(`Failed to switch to ${targetNetworkName} network`);
+        }
+        return success;
+      } catch (error) {
+        console.error('Network switch error:', error);
+        toast.error(
+          `Error switching to ${targetNetworkName}: ${error instanceof Error ? error.message : 'Unknown error'}`
+        );
+        return false;
       }
-      return success;
-    } catch (error) {
-      console.error('Network switch error:', error);
-      toast.error(`Error switching to ${targetNetworkName}: ${error instanceof Error ? error.message : 'Unknown error'}`);
-      return false;
-    }
-  }, []);
+    },
+    []
+  );
 
   const increment = useCallback(async () => {
     // If not on correct network, try to switch to a supported one
@@ -147,7 +157,7 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
           throw new Error('Please switch to a supported network to perform transactions');
         }
         // Wait a moment for the network switch to complete
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise((resolve) => setTimeout(resolve, 1000));
       }
     }
 
@@ -178,7 +188,7 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
           throw new Error('Please switch to a supported network to perform transactions');
         }
         // Wait a moment for the network switch to complete
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise((resolve) => setTimeout(resolve, 1000));
       }
     }
 

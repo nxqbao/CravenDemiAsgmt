@@ -2,7 +2,7 @@
 export enum NetworkType {
   LOCALHOST = 'localhost',
   WORLDCHAIN_SEPOLIA = 'worldcoin-sepolia',
-  MONAD_TESTNET = 'monad-testnet'
+  MONAD_TESTNET = 'monad-testnet',
 }
 
 // Current active network - change this to switch networks
@@ -14,20 +14,20 @@ export const NETWORK_CONFIG = {
     name: 'localhost',
     displayName: 'Localhost 8545',
     chainId: 31337,
-    isTestnet: true
+    isTestnet: true,
   },
   [NetworkType.WORLDCHAIN_SEPOLIA]: {
     name: 'worldcoin-sepolia',
     displayName: 'Worldcoin Sepolia Testnet',
     chainId: 4801,
-    isTestnet: true
+    isTestnet: true,
   },
   [NetworkType.MONAD_TESTNET]: {
     name: 'monad-testnet',
     displayName: 'Monad Testnet',
     chainId: 20143,
-    isTestnet: true
-  }
+    isTestnet: true,
+  },
 };
 
 // Get active network configuration

@@ -362,5 +362,3 @@ This project fulfills all requirements from the Web3 Engineer Take-Home Assignme
 This project is licensed under the UNLICENSED license - see the contract SPDX headers for details.
 
 ---
-
-**Built with ❤️ for the Web3 Engineer Take-Home Assignment**
