@@ -19,9 +19,11 @@ export interface Web3ContextType {
   networkName: string | null;
   chainId: number | null;
   isConnecting: boolean;
+  isCorrectNetwork: boolean;
   connectWallet: () => Promise<void>;
   disconnectWallet: () => void;
   getCount: () => Promise<number>;
+  getCountWithoutWallet: (networkName: string) => Promise<number>;
   increment: () => Promise<void>;
   decrement: () => Promise<void>;
 }
@@ -37,7 +39,19 @@ export const connectToMetaMask = async (): Promise<{
   }
 
   try {
-    // Request account access
+    // First, try to request permissions to ensure MetaMask shows the connection dialog
+    console.log('Requesting MetaMask permissions...');
+    try {
+      await window.ethereum.request({
+        method: 'wallet_requestPermissions',
+        params: [{ eth_accounts: {} }]
+      });
+    } catch (permError) {
+      // If wallet_requestPermissions is not supported, fall back to eth_requestAccounts
+      console.warn('wallet_requestPermissions not supported, using eth_requestAccounts:', permError);
+    }
+
+    // Request account access - this should now show the account selection dialog
     console.log('Requesting MetaMask account access...');
     await window.ethereum.request({ method: 'eth_requestAccounts' });
 
@@ -87,6 +101,55 @@ export const getContractForNetwork = (
     return null;
   }
   return new ethers.Contract(networkDeployment.contractAddress, CounterABI, signer);
+};
+
+export const isNetworkSupported = (networkName: string): boolean => {
+  const networkDeployment = getDeploymentForNetwork(networkName);
+  return !!(networkDeployment && networkDeployment.contractAddress && networkDeployment.contractAddress !== "");
+};
+
+export const getSupportedNetworks = (): string[] => {
+  const config = deployment as DeploymentConfig;
+  return Object.keys(config).filter(networkName => {
+    const deployment = config[networkName];
+    return deployment.contractAddress && deployment.contractAddress !== "";
+  });
+};
+
+export const getSupportedNetworkDetails = (): { name: string; chainId: number; contractAddress: string }[] => {
+  const config = deployment as DeploymentConfig;
+  return Object.entries(config)
+    .filter(([_, deployment]) => deployment.contractAddress && deployment.contractAddress !== "")
+    .map(([name, deployment]) => ({
+      name,
+      chainId: deployment.chainId,
+      contractAddress: deployment.contractAddress
+    }));
+};
+
+export const getReadOnlyContract = (networkName: string): ethers.Contract | null => {
+  const networkDeployment = getDeploymentForNetwork(networkName);
+  if (!networkDeployment || !networkDeployment.contractAddress) {
+    return null;
+  }
+  
+  // Create a read-only provider for the specific network
+  let rpcUrl: string;
+  if (networkName === 'localhost') {
+    rpcUrl = 'http://localhost:8545';
+  } else if (networkName === 'monad-testnet') {
+    rpcUrl = 'https://testnet1.monad.xyz'; // Replace with actual Monad testnet RPC
+  } else {
+    return null;
+  }
+  
+  try {
+    const provider = new ethers.JsonRpcProvider(rpcUrl);
+    return new ethers.Contract(networkDeployment.contractAddress, CounterABI, provider);
+  } catch (error) {
+    console.error(`Failed to create read-only contract for ${networkName}:`, error);
+    return null;
+  }
 };
 
 declare global {

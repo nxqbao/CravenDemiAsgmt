@@ -7,6 +7,9 @@ import {
   connectToMetaMask,
   getContractForNetwork,
   getNetworkName,
+  isNetworkSupported,
+  getSupportedNetworks,
+  getReadOnlyContract,
 } from '../lib/web3';
 import toast from 'react-hot-toast';
 
@@ -28,6 +31,7 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
   const [networkName, setNetworkName] = useState<string | null>(null);
   const [chainId, setChainId] = useState<number | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
+  const [isCorrectNetwork, setIsCorrectNetwork] = useState(false);
 
   const connectWallet = useCallback(async () => {
     try {
@@ -43,6 +47,7 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
       console.log('MetaMask connection successful:', { account: newAccount, networkName: newNetworkName });
 
       const newContract = getContractForNetwork(newSigner, newNetworkName);
+      const networkSupported = isNetworkSupported(newNetworkName);
 
       if (!newContract) {
         console.warn(`No contract deployed on ${newNetworkName} network`);
@@ -55,6 +60,7 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
       setAccount(newAccount);
       setNetworkName(newNetworkName);
       setChainId(newChainId);
+      setIsCorrectNetwork(networkSupported);
 
       toast.success(`Wallet connected to ${newNetworkName}!`);
     } catch (error) {
@@ -65,14 +71,36 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, []);
 
-  const disconnectWallet = useCallback(() => {
-    setProvider(null);
-    setSigner(null);
-    setContract(null);
-    setAccount(null);
-    setNetworkName(null);
-    setChainId(null);
-    toast.success('Wallet disconnected');
+  const disconnectWallet = useCallback(async () => {
+    try {
+      // Clear all state
+      setProvider(null);
+      setSigner(null);
+      setContract(null);
+      setAccount(null);
+      setNetworkName(null);
+      setChainId(null);
+      setIsCorrectNetwork(false);
+      
+      // Clear any cached permissions in MetaMask (if supported)
+      if (window.ethereum && window.ethereum.request) {
+        try {
+          // This will revoke the connection permission and force MetaMask to show the dialog next time
+          await window.ethereum.request({
+            method: 'wallet_revokePermissions',
+            params: [{ eth_accounts: {} }]
+          });
+        } catch (error) {
+          // wallet_revokePermissions might not be supported in all MetaMask versions
+          console.warn('wallet_revokePermissions not supported:', error);
+        }
+      }
+      
+      toast.success('Wallet disconnected - MetaMask will prompt for reconnection');
+    } catch (error) {
+      console.error('Error during disconnect:', error);
+      toast.success('Wallet disconnected');
+    }
   }, []);
 
   const getCount = useCallback(async (): Promise<number> => {
@@ -82,6 +110,15 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
     const count = await contract.count();
     return Number(count);
   }, [contract]);
+
+  const getCountWithoutWallet = useCallback(async (networkName: string): Promise<number> => {
+    const readOnlyContract = getReadOnlyContract(networkName);
+    if (!readOnlyContract) {
+      throw new Error(`No contract available for network: ${networkName}`);
+    }
+    const count = await readOnlyContract.count();
+    return Number(count);
+  }, []);
 
   const increment = useCallback(async () => {
     if (!contract) {
@@ -125,10 +162,15 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
       const handleAccountsChanged = (...args: unknown[]) => {
         const accounts = args[0] as string[];
         if (accounts.length === 0) {
+          // User disconnected from MetaMask, clear our state
           disconnectWallet();
-        } else if (accounts[0] !== account) {
-          // Account changed, reconnect
-          connectWallet();
+        } else if (account && accounts[0] !== account) {
+          // Account changed in MetaMask, disconnect to force manual reconnection
+          toast('Account changed in MetaMask. Please reconnect to continue.', {
+            icon: 'ℹ️',
+            duration: 4000,
+          });
+          disconnectWallet();
         }
       };
 
@@ -138,7 +180,7 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
         window.ethereum?.removeListener('accountsChanged', handleAccountsChanged);
       };
     }
-  }, [account, connectWallet, disconnectWallet]);
+  }, [account, disconnectWallet]);
 
   // Listen for network changes
   useEffect(() => {
@@ -153,12 +195,14 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
 
         // Update contract for new network
         const newContract = getContractForNetwork(signer, newNetworkName);
+        const networkSupported = isNetworkSupported(newNetworkName);
         setContract(newContract);
+        setIsCorrectNetwork(networkSupported);
 
         if (!newContract) {
-          toast.error(`No contract deployed on ${newNetworkName} network`);
+          toast.error(`Switched to ${newNetworkName} network - No contract deployed here`);
         } else {
-          toast.success(`Switched to ${newNetworkName} network`);
+          toast.success(`Switched to ${newNetworkName} network - Contract available!`);
         }
       };
 
@@ -178,9 +222,11 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
     networkName,
     chainId,
     isConnecting,
+    isCorrectNetwork,
     connectWallet,
     disconnectWallet,
     getCount,
+    getCountWithoutWallet,
     increment,
     decrement,
   };
