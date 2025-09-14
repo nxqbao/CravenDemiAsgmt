@@ -4,7 +4,7 @@
     "chainId": 31337
   },
   "monad-testnet": {
-    "contractAddress": "0x96b94832e26eb552f6937bfbe43f6b0d3959f220",
+    "contractAddress": "0xf454c81648318d79712bD61cA9878cD4F12ba3E1",
     "chainId": 10143
   },
   "worldcoin-sepolia": {

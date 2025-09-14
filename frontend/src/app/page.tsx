@@ -12,6 +12,8 @@ export default function Home() {
     networkName,
     isConnecting,
     isCorrectNetwork,
+    contractVerified,
+    contractVerificationError,
     connectWallet,
     disconnectWallet,
     getCount,
@@ -19,6 +21,7 @@ export default function Home() {
     increment,
     decrement,
     switchToNetwork,
+    verifyContract,
   } = useWeb3();
 
   const [count, setCount] = useState<number>(0);
@@ -58,6 +61,20 @@ export default function Home() {
 
     loadCount();
   }, [account, isCorrectNetwork, getCount, getCountWithoutWallet]);
+
+  // Verify contract deployment on startup
+  useEffect(() => {
+    const verifyContractOnStartup = async () => {
+      const activeNetworkName = getActiveNetworkName();
+      try {
+        await verifyContract(activeNetworkName);
+      } catch (error) {
+        console.error('Failed to verify contract on startup:', error);
+      }
+    };
+
+    verifyContractOnStartup();
+  }, [verifyContract]);
 
   const handleIncrement = async () => {
     try {

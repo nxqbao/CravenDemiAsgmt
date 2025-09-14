@@ -11,6 +11,7 @@ import {
   getSupportedNetworks,
   getReadOnlyContract,
   switchToNetwork,
+  verifyContractDeployment,
 } from '../lib/web3';
 import { getActiveNetworkConfig, getActiveNetworkName } from '../lib/config';
 import toast from 'react-hot-toast';
@@ -34,6 +35,8 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
   const [chainId, setChainId] = useState<number | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
   const [isCorrectNetwork, setIsCorrectNetwork] = useState(false);
+  const [contractVerified, setContractVerified] = useState(false);
+  const [contractVerificationError, setContractVerificationError] = useState<string | undefined>();
 
   const connectWallet = useCallback(async () => {
     try {
@@ -187,6 +190,18 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
     },
     []
   );
+
+  const verifyContract = useCallback(async (networkName: string) => {
+    try {
+      const result = await verifyContractDeployment(networkName);
+      setContractVerified(result.isValid);
+      setContractVerificationError(result.error);
+    } catch (error) {
+      console.error('Contract verification error:', error);
+      setContractVerified(false);
+      setContractVerificationError('Failed to verify contract');
+    }
+  }, []);
 
   const increment = useCallback(async () => {
     // If not on correct network, try to switch to a supported one
@@ -345,6 +360,8 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
     chainId,
     isConnecting,
     isCorrectNetwork,
+    contractVerified,
+    contractVerificationError,
     connectWallet,
     disconnectWallet,
     getCount,
@@ -352,6 +369,7 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
     increment,
     decrement,
     switchToNetwork: switchToSupportedNetwork,
+    verifyContract,
   };
 
   return <Web3Context.Provider value={value}>{children}</Web3Context.Provider>;

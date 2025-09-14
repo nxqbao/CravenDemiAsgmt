@@ -21,6 +21,8 @@ export interface Web3ContextType {
   chainId: number | null;
   isConnecting: boolean;
   isCorrectNetwork: boolean;
+  contractVerified: boolean;
+  contractVerificationError?: string;
   connectWallet: () => Promise<void>;
   disconnectWallet: () => void;
   getCount: () => Promise<number>;
@@ -28,6 +30,7 @@ export interface Web3ContextType {
   increment: () => Promise<void>;
   decrement: () => Promise<void>;
   switchToNetwork: (networkName: string) => Promise<boolean>;
+  verifyContract: (networkName: string) => Promise<void>;
 }
 export const connectToMetaMask = async (): Promise<{
   provider: ethers.BrowserProvider;
@@ -116,6 +119,36 @@ export const isNetworkSupported = (networkName: string): boolean => {
     networkDeployment.contractAddress &&
     networkDeployment.contractAddress !== ''
   );
+};
+
+export const verifyContractDeployment = async (networkName: string): Promise<{ isValid: boolean; error?: string }> => {
+  try {
+    const readOnlyContract = getReadOnlyContract(networkName);
+    if (!readOnlyContract) {
+      return { isValid: false, error: 'No contract address configured for this network' };
+    }
+
+    // Try to call the count function to verify the contract exists and has the expected interface
+    await readOnlyContract.count();
+    return { isValid: true };
+  } catch (error) {
+    console.error('Contract verification failed:', error);
+    let errorMessage = 'Unknown contract verification error';
+
+    if (error instanceof Error) {
+      if (error.message.includes('call revert exception') || error.message.includes('execution reverted')) {
+        errorMessage = 'Contract call reverted - invalid contract interface';
+      } else if (error.message.includes('network') || error.message.includes('connection')) {
+        errorMessage = 'Network connection error during contract verification';
+      } else if (error.message.includes('missing revert data')) {
+        errorMessage = 'Contract address does not exist or is not a valid contract';
+      } else {
+        errorMessage = `Contract verification failed: ${error.message}`;
+      }
+    }
+
+    return { isValid: false, error: errorMessage };
+  }
 };
 
 export const getSupportedNetworks = (): string[] => {
